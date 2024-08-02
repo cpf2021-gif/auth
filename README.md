@@ -7,7 +7,7 @@ a simple way to authenticate with oauth2 providers
 
 ## Supported Providers
 - [x] Github
-- [ ] Google
+- [x] Google
 
 ## Usage
 ```go
