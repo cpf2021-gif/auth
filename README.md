@@ -9,19 +9,33 @@ a simple way to authenticate with oauth2 providers
 - [x] Github
 - [x] Google
 
-## Usage
+## Example
 ```go
-// 1. Create a new auth client with the provider
-conf, err := auth.NewConfig(provider.NameGithub, 
-		auth.WithClientId("YOUR_CLIENT_ID"),
-		auth.WithClientSecret("YOUR_CLIENT_SECRET"),
-		auth.WithRedirectUrl("YOUR_REDIRECT_URL"))
+auth.RegisterProviders(
+	provider.NewGithub(
+		provider.WithClientId("client_id"), 
+		provider.WithClientSecret("client_secret"),
+		provider.WithRedirectUrl("redirect_url"),
+	),
+	provider.NewGoogle(
+		provider.WithClientId("client_id"),
+		provider.WithClientSecret("client_secret"),
+		provider.WithRedirectUrl("redirect_url"),
+	),
+)
 
-// 2. Use the code to exchange for a token
-token, err := conf.GetToken(code)
+// 2. Get token
+token, err := auth.GetToken("github", "code")
+if err != nil {
+	fmt.Println(err)
+}
 
-// 3. Use the token to get user Message
-user, err := conf.GetUser(token)
+// 3. Get user
+user, err := auth.GetUser("github", token)
+if err != nil {
+	fmt.Println(err)
+}
+fmt.Println(user)
 ```
 
 # References

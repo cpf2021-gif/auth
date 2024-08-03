@@ -11,6 +11,7 @@ import (
 
 type base struct {
 	ctx          context.Context
+	displayName  string
 	clientId     string
 	clientSecret string
 	redirectUrl  string
@@ -26,6 +27,10 @@ func (p *base) Context() context.Context {
 
 func (p *base) SetContext(ctx context.Context) {
 	p.ctx = ctx
+}
+
+func (p *base) DisplayName() string {
+	return string(p.displayName)
 }
 
 func (p *base) ClientId() string {

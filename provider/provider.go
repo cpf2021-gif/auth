@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -18,6 +17,8 @@ type AuthUser struct {
 type Provider interface {
 	Context() context.Context
 	SetContext(ctx context.Context)
+
+	DisplayName() string
 
 	Scopes() []string
 	SetScopes(scopes []string)
@@ -45,11 +46,22 @@ type Provider interface {
 	FetchUser(token *oauth2.Token) (user *AuthUser, err error)
 }
 
-func NewProvider(providerName string) (Provider, error) {
-	switch providerName {
-	case NameGithub:
-		return NewGithub(), nil
-	default:
-		return nil, errors.New("no supported provider")
+type ProviderOption func(Provider)
+
+func WithRedirectUrl(redirectUrl string) ProviderOption {
+	return func(p Provider) {
+		p.SetRedirectUrl(redirectUrl)
+	}
+}
+
+func WithClientId(clientId string) ProviderOption {
+	return func(p Provider) {
+		p.SetClientId(clientId)
+	}
+}
+
+func WithClientSecret(clientSecret string) ProviderOption {
+	return func(p Provider) {
+		p.SetClientSecret(clientSecret)
 	}
 }

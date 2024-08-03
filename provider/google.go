@@ -11,16 +11,17 @@ import (
 
 var _ Provider = (*Google)(nil)
 
-const NameGoogle = "google"
+const NameGoogle string = "google"
 
 type Google struct {
 	*base
 }
 
-func NewGoogle() *Google {
-	return &Google{
+func NewGoogle(opts ...ProviderOption) *Google {
+	p := &Google{
 		base: &base{
-			ctx: context.Background(),
+			ctx:         context.Background(),
+			displayName: NameGoogle,
 			scopes: []string{
 				"openid",
 				"https://www.googleapis.com/auth/userinfo.email",
@@ -31,6 +32,12 @@ func NewGoogle() *Google {
 			userApiUrl: "https://www.googleapis.com/oauth2/v2/userinfo",
 		},
 	}
+
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	return p
 }
 
 func (p *Google) FetchToken(code string, opts ...oauth2.AuthCodeOption) (*oauth2.Token, error) {

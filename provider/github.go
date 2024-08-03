@@ -17,16 +17,23 @@ type Github struct {
 	*base
 }
 
-func NewGithub() *Github {
-	return &Github{
+func NewGithub(opts ...ProviderOption) *Github {
+	p := &Github{
 		base: &base{
-			ctx:        context.Background(),
-			scopes:     []string{"read:user", "user:email"},
-			authUrl:    github.Endpoint.AuthURL,
-			tokenUrl:   github.Endpoint.TokenURL,
-			userApiUrl: "https://api.github.com/user",
+			ctx:         context.Background(),
+			displayName: NameGithub,
+			scopes:      []string{"read:user", "user:email"},
+			authUrl:     github.Endpoint.AuthURL,
+			tokenUrl:    github.Endpoint.TokenURL,
+			userApiUrl:  "https://api.github.com/user",
 		},
 	}
+
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	return p
 }
 
 func (p *Github) FetchUser(token *oauth2.Token) (*AuthUser, error) {

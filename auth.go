@@ -1,29 +1,36 @@
 package auth
 
 import (
+	"errors"
+
 	"github.com/cpf2021-gif/auth/provider"
 	"golang.org/x/oauth2"
 )
 
-type Config struct {
-	provider provider.Provider
+var providers map[string]provider.Provider = make(map[string]provider.Provider)
+
+func RegisterProviders(ps ...provider.Provider) {
+	for _, p := range ps {
+		providers[p.DisplayName()] = p
+	}
 }
 
-func NewConfig(providerName string, opts ...ProviderOption) (*Config, error) {
-	provider, err := provider.NewProvider(providerName)
+func getProvider(providerName string) (provider.Provider, error) {
+	p, ok := providers[providerName]
+	if !ok {
+		return nil, errors.New("provider not found")
+	}
+
+	return p, nil
+}
+
+func GetToken(providerName, code string) (*oauth2.Token, error) {
+	p, err := getProvider(providerName)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, opt := range opts {
-		opt(provider)
-	}
-
-	return &Config{provider: provider}, nil
-}
-
-func (c *Config) GetToken(code string) (*oauth2.Token, error) {
-	token, err := c.provider.FetchToken(code)
+	token, err := p.FetchToken(code)
 	if err != nil {
 		return nil, err
 	}
@@ -31,37 +38,16 @@ func (c *Config) GetToken(code string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-func (c *Config) GetUser(token *oauth2.Token) (*provider.AuthUser, error) {
-	user, err := c.provider.FetchUser(token)
+func GetUser(providerName string, token *oauth2.Token) (*provider.AuthUser, error) {
+	p, err := getProvider(providerName)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := p.FetchUser(token)
 	if err != nil {
 		return nil, err
 	}
 
 	return user, nil
-}
-
-type ProviderOption func(provider.Provider)
-
-func WithUserApiUrl(userApiUrl string) ProviderOption {
-	return func(p provider.Provider) {
-		p.SetUserApiUrl(userApiUrl)
-	}
-}
-
-func WithRedirectUrl(redirectUrl string) ProviderOption {
-	return func(p provider.Provider) {
-		p.SetRedirectUrl(redirectUrl)
-	}
-}
-
-func WithClientId(clientId string) ProviderOption {
-	return func(p provider.Provider) {
-		p.SetClientId(clientId)
-	}
-}
-
-func WithClientSecret(clientSecret string) ProviderOption {
-	return func(p provider.Provider) {
-		p.SetClientSecret(clientSecret)
-	}
 }
